@@ -1,13 +1,10 @@
-<!-- REQUIRED -->
 # Description
 
-Please include a summary of the changes and the related issue. Please also include relevant motivation and context. List any dependencies that are required for this change.
+**Required** - Please include a summary of the changes and the related issue. Please also include relevant motivation and context. List any dependencies that are required for this change.
 
-<!-- REQUIRED -->
-## JIRA ticket number and link
+**Required** - ## JIRA ticket number and link
 
-<!-- REQUIRED -->
-## Type of change
+**Required** - ## Type of change
 
 Please delete options that are not relevant.
 
@@ -16,14 +13,12 @@ Please delete options that are not relevant.
 - [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
 - [ ] This change requires a documentation update
 
-<!-- REQUIRED -->
 # How Has This Been Tested?
 
-Please describe the tests that you ran to verify your changes. Provide instructions so we can reproduce. Please also list any relevant details for your test configuration
+**Required** - Please describe the tests that you ran to verify your changes. Provide instructions so we can reproduce. Please also list any relevant details for your test configuration
 
-<!-- REQUIRED -->
 # Checklist:
-
+**Required** sdfsd
 - [ ] I have performed a self-review of my code
 - [ ] I have made corresponding changes to the documentation
 - [ ] My changes generate no new warnings
