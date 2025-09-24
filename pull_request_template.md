@@ -17,6 +17,7 @@ Please delete options that are not relevant.
 
 Please describe the tests that you ran to verify your changes. Provide instructions so we can reproduce. Please also list any relevant details for your test configuration
 
+
 # Checklist:
 
 - [ ] I have performed a self-review of my code
@@ -29,3 +30,19 @@ Please describe the tests that you ran to verify your changes. Provide instructi
 - [ ] I have updated the relevant Jira ticket status
 - [ ] I commit to pursuing this change all the way to production, and will prioritize e2e completion
 - [ ] I commit to testing this code in production, as soon as it gets released
+
+## Migration
+
+<!-- If this PR contains database migrations, please complete the following checklist -->
+
+- [ ] **Migration Files**
+  - [ ] Migration file(s) are included in the PR
+  - [ ] Migration file naming follows the correct timestamp convention
+
+- [ ] **Migration Snapshot**
+  - [ ] Database schema snapshot is updated and included in the PR
+  - [ ] Snapshot reflects all changes from the migration
+  - [ ] Snapshot has been verified against the migration changes
+
+- [ ] **Additional Checks**
+  - [ ] Migration has been tested locally

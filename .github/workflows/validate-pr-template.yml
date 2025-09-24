@@ -10,7 +10,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Validate PR description
-        id: validate-pr
+        id: validate-pr-template
         run: |
           PR_BODY="${{ github.event.pull_request.body }}"
           
@@ -80,9 +80,7 @@ jobs:
             
                 unchecked_types=$(echo "$type_section" | grep -E "^- \[[[:space:]]*\]" | wc -l)
                 unchecked_types=$(echo "$unchecked_types" | tr -d ' ') 
-            
-                echo "Type items: $type_items, Checked: $checked_types, Unchecked: $unchecked_types"
-            
+                        
                 # Check if at least one item is checked
                 if [ "$checked_types" -eq 0 ]; then
                     insufficient_content_sections+=("type of change (no items checked)")
@@ -107,9 +105,7 @@ jobs:
              # Clean the numbers by removing whitespace
              checklist_items=$(echo "$checklist_items" | tr -d ' ')
              unchecked_items=$(echo "$unchecked_items" | tr -d ' ') 
-              
-              echo "Checklist items: $checklist_items, Unchecked: $unchecked_items"
-              
+                            
               if [ "$checklist_items" -gt 0 ]; then
                   if [ "$unchecked_items" -gt 0 ]; then
                       insufficient_content_sections+=("checklist (${unchecked_items} item(s) unchecked)")
