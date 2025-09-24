@@ -66,11 +66,16 @@ jobs:
 
             # Type of change items (at least some should be checked)
           if echo "$PR_BODY_LOWER" | grep -q "type of change"; then
-            checklist_section=$(echo "$PR_BODY" | awk '
-              /type of change/, /^#|$/' | grep -E "^- \[[ x]\]" | wc -l)
-            checked_items=$(echo "$PR_BODY" | grep -E "^- \[x\]" | wc -l)
+            type_section=$(echo "$PR_BODY_LOWER" | awk '
+                  /type of change/ { found=1; next }
+                  found && /^#/ { found=0 }  # Stop at next header
+                  found { print }
+              ')
             
-            if [ "$checklist_section" -gt 0 ] && [ "$checked_items" -eq 0 ]; then
+            checked_types=$(echo "$type_section" | grep -c -E "^- \[[ x]\]" || echo "0")
+
+            
+            if [ "$checked_types" -gt 0 ] && [ "$checked_types" -eq 0 ]; then
               insufficient_content_sections+=("type of change (no items checked)")
             fi
           else
@@ -79,9 +84,16 @@ jobs:
 
            # Check checklist items (all should be checked)
           if echo "$PR_BODY_LOWER" | grep -qi "checklist"; then
-              # Count using different pattern matching
-              checklist_items=$(echo "$PR_BODY" | grep -c -E "^- \[[ x]\]" || echo "0")
-              unchecked_items=$(echo "$PR_BODY" | grep -c -E "^- \[[[:space:]]*\]" || echo "0")
+              # Extract only the checklist section
+              checklist_section=$(echo "$PR_BODY" | awk '
+                  /[Cc]hecklist/ { found=1; next }
+                  found && /^#/ { found=0 }  # Stop at next header
+                  found { print }
+              ')
+              
+              # Count using the checklist section only
+              checklist_items=$(echo "$checklist_section" | grep -c -E "^- \[[ x]\]" || echo "0")
+              unchecked_items=$(echo "$checklist_section" | grep -c -E "^- \[[[:space:]]*\]" || echo "0")
               
               echo "Checklist items: $checklist_items, Unchecked: $unchecked_items"
               
