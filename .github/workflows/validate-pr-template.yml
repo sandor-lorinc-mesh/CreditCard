@@ -56,7 +56,7 @@ jobs:
               clean_content=$(echo "$section_content" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' -e 's/^- \[[x ]\] //g' -e 's/`//g' -e 's/\*\*//g')
               
               # Check if content is insufficient (too short or placeholder-like)
-              if [ -z "$clean_content" ] || [ ${#clean_content} -lt 20 ] || 
+              if [ -z "$clean_content" ] || [ ${#clean_content} -lt 10 ] || 
                  echo "$clean_content" | grep -qiE "please include|please describe|n/a|todo|tbd|\.\.\."; then
                 insufficient_content_sections+=("$section_name")
               fi
