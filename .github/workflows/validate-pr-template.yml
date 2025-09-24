@@ -92,8 +92,8 @@ jobs:
               ')
               
               # Count using the checklist section only
-              checklist_items=$(echo "$checklist_section" | grep -c -E "^- \[[ x]\]" || echo "0")
-              unchecked_items=$(echo "$checklist_section" | grep -c -E "^- \[[[:space:]]*\]" || echo "0")
+              checklist_items=$(( $(echo "$checklist_section" | grep -E "^- \[[ x]\]" | wc -l) ))
+              unchecked_items=$(( $(echo "$checklist_section" | grep -E "^- \[[[:space:]]*\]" | wc -l) 
               
               echo "Checklist items: $checklist_items, Unchecked: $unchecked_items"
               
