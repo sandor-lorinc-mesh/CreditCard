@@ -86,7 +86,7 @@ jobs:
           if echo "$PR_BODY_LOWER" | grep -qi "checklist"; then
               # Extract only the checklist section
               checklist_section=$(echo "$PR_BODY" | awk '
-                  /[Cc]hecklist/ { found=1; next }
+                  /[Cc]hecklist:/ { found=1; next }
                   found && /^#/ { found=0 }  # Stop at next header
                   found { print }
               ')
