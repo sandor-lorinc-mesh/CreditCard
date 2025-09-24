@@ -65,16 +65,16 @@ jobs:
           done
 
             # Type of change items (at least some should be checked)
-          if echo "$PR_BODY_LOWER" | grep -q "type of change"; then
+          if echo "$PR_BODY_LOWER" | grep -qi "type of change"; then
             type_section=$(echo "$PR_BODY_LOWER" | awk '
                   /type of change/ { found=1; next }
                   found && /^#/ { found=0 }  # Stop at next header
                   found { print }
               ')
             
-            checked_types=$(echo "$type_section" | grep -c -E "^- \[[ x]\]" || echo "0")
+             checked_types=$(echo "$type_section" | grep -E "^- \[[ x]\]" | wc -l)
+             checked_types=$(echo "$checked_types" | tr -d ' ')
 
-            
             if [ "$checked_types" -gt 0 ] && [ "$checked_types" -eq 0 ]; then
               insufficient_content_sections+=("type of change (no items checked)")
             fi
