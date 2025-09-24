@@ -27,9 +27,9 @@ jobs:
           # Required sections to check
           declare -A required_sections=(
             ["description"]="description"
-            ["jira"]="jira ticket number"
+            ["jira"]="jira ticket number and link"
             ["type of change"]="type of change"
-            ["tested"]="how has this been tested"
+            ["tested"]="how has this been tested?"
           )
 
           missing_sections=()
@@ -57,7 +57,7 @@ jobs:
               
               # Check if content is insufficient (too short or placeholder-like)
               if [ -z "$clean_content" ] || [ ${#clean_content} -lt 20 ] || 
-                 echo "$clean_content" | grep -qiE "please include|please describe|please delete|n/a|todo|tbd|\.\.\."; then
+                 echo "$clean_content" | grep -qiE "please include|please describe|n/a|todo|tbd|\.\.\."; then
                 insufficient_content_sections+=("$section_name")
               fi
             else
