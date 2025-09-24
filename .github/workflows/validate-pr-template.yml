@@ -9,7 +9,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
       - name: Validate PR description
         id: validate-pr
         run: |
@@ -65,35 +64,35 @@ jobs:
           done
 
          # Check checklist items (all should be checked)
-            if echo "$PR_BODY_LOWER" | grep -q "checklist"; then
-                # Extract checklist section more reliably
-                checklist_section=$(echo "$PR_BODY" | awk '
-                    BEGIN { found=0; content="" }
-                    /[Cc]hecklist/ { found=1 }
-                    found && /^#/ { found=0 }  # Stop at next header
-                    found { content = content $0 "\n" }
-                    END { print content }
-                ')
-                
-                # Count checklist items and checked status
-                checklist_items=$(echo "$checklist_section" | grep -E "^- \[[ x]\]" | wc -l)
-                checked_items=$(echo "$checklist_section" | grep -E "^- \[x\]" | wc -l)
-                unchecked_items=$(echo "$checklist_section" | grep -E "^- \[ \]" | wc -l)
-                
-                echo "Debug: Checklist items: $checklist_items, Checked: $checked_items, Unchecked: $unchecked_items"
-                
-                if [ "$checklist_items" -gt 0 ]; then
-                    if [ "$unchecked_items" -gt 0 ]; then
-                        insufficient_content_sections+=("checklist (${unchecked_items} item(s) unchecked)")
-                    elif [ "$checked_items" -eq 0 ]; then
-                        insufficient_content_sections+=("checklist (no items checked)")
-                    fi
-                else
-                    insufficient_content_sections+=("checklist (no checklist items found)")
+        if echo "$PR_BODY_LOWER" | grep -q "checklist"; then
+            # Extract checklist section more reliably
+            checklist_section=$(echo "$PR_BODY" | awk '
+                BEGIN { found=0; content="" }
+                /[Cc]hecklist/ { found=1 }
+                found && /^#/ { found=0 }  # Stop at next header
+                found { content = content $0 "\n" }
+                END { print content }
+            ')
+            
+            # Count checklist items and checked status
+            checklist_items=$(echo "$checklist_section" | grep -E "^- \[[ x]\]" | wc -l)
+            checked_items=$(echo "$checklist_section" | grep -E "^- \[x\]" | wc -l)
+            unchecked_items=$(echo "$checklist_section" | grep -E "^- \[ \]" | wc -l)
+            
+            echo "Debug: Checklist items: $checklist_items, Checked: $checked_items, Unchecked: $unchecked_items"
+            
+            if [ "$checklist_items" -gt 0 ]; then
+                if [ "$unchecked_items" -gt 0 ]; then
+                    insufficient_content_sections+=("checklist (${unchecked_items} item(s) unchecked)")
+                elif [ "$checked_items" -eq 0 ]; then
+                    insufficient_content_sections+=("checklist (no items checked)")
                 fi
             else
-                missing_sections+=("checklist")
+                insufficient_content_sections+=("checklist (no checklist items found)")
             fi
+        else
+            missing_sections+=("checklist")
+        fi
 
           # Report results
           if [ ${#missing_sections[@]} -gt 0 ] || [ ${#insufficient_content_sections[@]} -gt 0 ]; then
