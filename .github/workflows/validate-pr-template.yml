@@ -63,24 +63,24 @@ jobs:
             fi
           done
 
-        # Check checklist items (all should be checked)
-        if echo "$PR_BODY_LOWER" | grep -qi "checklist"; then
-            # Count using different pattern matching
-            checklist_items=$(echo "$PR_BODY" | grep -c -E "^- \[[ x]\]")
-            unchecked_items=$(echo "$PR_BODY" | grep -c -E "^- \[[[:space:]]*\]")
-            
-            echo "Checklist items: $checklist_items, Unchecked: $unchecked_items"
-            
-            if [ "$checklist_items" -gt 0 ]; then
-                if [ "$unchecked_items" -gt 0 ]; then
-                    insufficient_content_sections+=("checklist (${unchecked_items} item(s) unchecked)")
-                fi
-            else
-                insufficient_content_sections+=("checklist (no checklist items found)")
-            fi
-        else
-            missing_sections+=("checklist")
-        fi
+           # Check checklist items (all should be checked)
+          if echo "$PR_BODY_LOWER" | grep -qi "checklist"; then
+              # Count using different pattern matching
+              checklist_items=$(echo "$PR_BODY" | grep -c -E "^- \[[ x]\]")
+              unchecked_items=$(echo "$PR_BODY" | grep -c -E "^- \[[[:space:]]*\]")
+              
+              echo "Checklist items: $checklist_items, Unchecked: $unchecked_items"
+              
+              if [ "$checklist_items" -gt 0 ]; then
+                  if [ "$unchecked_items" -gt 0 ]; then
+                      insufficient_content_sections+=("checklist (${unchecked_items} item(s) unchecked)")
+                  fi
+              else
+                  insufficient_content_sections+=("checklist (no checklist items found)")
+              fi
+          else
+              missing_sections+=("checklist")
+          fi
 
           # Report results
           if [ ${#missing_sections[@]} -gt 0 ] || [ ${#insufficient_content_sections[@]} -gt 0 ]; then
