@@ -9,7 +9,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
       - name: Validate PR description
         id: validate-pr
         run: |
@@ -28,12 +27,12 @@ jobs:
           declare -A required_sections=(
             ["description"]="description"
             ["jira"]="jira ticket number and link"
-            ["type of change"]="type of change"
             ["tested"]="how has this been tested?"
           )
 
-          missing_sections=()
-          insufficient_content_sections=()
+           # Initialize arrays if not already done
+           missing_sections=("${missing_sections[@]}")
+           insufficient_content_sections=("${insufficient_content_sections[@]}")
 
           # Check each required section
           for section_key in "${!required_sections[@]}"; do
@@ -57,7 +56,7 @@ jobs:
               
               # Check if content is insufficient (too short or placeholder-like)
               if [ -z "$clean_content" ] || [ ${#clean_content} -lt 10 ] || 
-                 echo "$clean_content" | grep -qiE "please include|please describe|n/a|todo|tbd|\.\.\."; then
+                 echo "$clean_content" | grep -qiE "please describe|n/a|\.\.\."; then
                 insufficient_content_sections+=("$section_name")
               fi
             else
@@ -65,17 +64,61 @@ jobs:
             fi
           done
 
-          # Check checklist items (at least some should be checked)
-          if echo "$PR_BODY_LOWER" | grep -q "checklist"; then
-            checklist_section=$(echo "$PR_BODY" | awk '
-              /checklist:/, /^#|$/' | grep -E "^- \[[ x]\]" | wc -l)
-            checked_items=$(echo "$PR_BODY" | grep -E "^- \[x\]" | wc -l)
+           # Type of change items (at least some should be checked)
+            if echo "$PR_BODY_LOWER" | grep -qi "type of change"; then
+                type_section=$(echo "$PR_BODY_LOWER" | awk '
+                    /type of change/ { found=1; next }
+                    found && /^#/ { found=0 }  # Stop at next header
+                    found { print }
+                ')
+                
+                type_items=$(echo "$type_section" | grep -E "^- \[[ x]\]" | wc -l)
+                type_items=$(echo "$type_items" | tr -d ' ')
             
-            if [ "$checklist_section" -gt 0 ] && [ "$checked_items" -eq 0 ]; then
-              insufficient_content_sections+=("checklist (no items checked)")
+                checked_types=$(echo "$type_section" | grep -E "^- \[x\]" | wc -l)
+                checked_types=$(echo "$checked_types" | tr -d ' ')
+            
+                unchecked_types=$(echo "$type_section" | grep -E "^- \[[[:space:]]*\]" | wc -l)
+                unchecked_types=$(echo "$unchecked_types" | tr -d ' ') 
+            
+                echo "Type items: $type_items, Checked: $checked_types, Unchecked: $unchecked_types"
+            
+                # Check if at least one item is checked
+                if [ "$checked_types" -eq 0 ]; then
+                    insufficient_content_sections+=("type of change (no items checked)")
+                fi
+            else
+                missing_sections+=("type of change")
             fi
+
+           # Check checklist items (all should be checked)
+          if echo "$PR_BODY_LOWER" | grep -qi "checklist"; then
+              # Extract only the checklist section
+              checklist_section=$(echo "$PR_BODY_LOWER" | awk '
+                  /checklist:/ { found=1; next }
+                  found && /^#/ { found=0 }  # Stop at next header
+                  found { print }
+              ')
+              
+              # Count using the checklist section only
+             checklist_items=$(echo "$checklist_section" | grep -E "^- \[[ x]\]" | wc -l)
+             unchecked_items=$(echo "$checklist_section" | grep -E "^- \[[[:space:]]*\]" | wc -l)
+             
+             # Clean the numbers by removing whitespace
+             checklist_items=$(echo "$checklist_items" | tr -d ' ')
+             unchecked_items=$(echo "$unchecked_items" | tr -d ' ') 
+              
+              echo "Checklist items: $checklist_items, Unchecked: $unchecked_items"
+              
+              if [ "$checklist_items" -gt 0 ]; then
+                  if [ "$unchecked_items" -gt 0 ]; then
+                      insufficient_content_sections+=("checklist (${unchecked_items} item(s) unchecked)")
+                  fi
+              else
+                  insufficient_content_sections+=("checklist (no checklist items found)")
+              fi
           else
-            missing_sections+=("checklist")
+              missing_sections+=("checklist")
           fi
 
           # Report results
