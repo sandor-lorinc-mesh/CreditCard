@@ -1,0 +1,118 @@
+name: Validate PR Description
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
+
+jobs:
+  validate-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Validate PR description
+        id: validate-pr
+        run: |
+          PR_BODY="${{ github.event.pull_request.body }}"
+          
+          # Check if PR body is empty
+          if [ -z "$PR_BODY" ]; then
+            echo "❌ PR description is empty"
+            exit 1
+          fi
+
+          # Convert PR body to lowercase for case-insensitive checks
+          PR_BODY_LOWER=$(echo "$PR_BODY" | tr '[:upper:]' '[:lower:]')
+
+          # Required sections to check
+          declare -A required_sections=(
+            ["description"]="description"
+            ["jira"]="jira ticket number"
+            ["type of change"]="type of change"
+            ["tested"]="how has this been tested"
+          )
+
+          missing_sections=()
+          insufficient_content_sections=()
+
+          # Check each required section
+          for section_key in "${!required_sections[@]}"; do
+            section_name="${required_sections[$section_key]}"
+            
+            # Check if section exists in PR body
+            if echo "$PR_BODY_LOWER" | grep -q "$section_name"; then
+              # Extract content between the section header and next header (or end)
+              section_content=$(echo "$PR_BODY" | awk -v section="$section_name" '
+                BEGIN { found=0; content="" }
+                /^#/ { 
+                  if (found && tolower($0) ~ /^#/) { exit }
+                  if (tolower($0) ~ section) { found=1; next }
+                }
+                found && !/^$/ { content=content $0 "\n" }
+                END { print content }
+              ')
+              
+              # Clean up the content - remove markdown formatting, check if it's meaningful
+              clean_content=$(echo "$section_content" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' -e 's/^- \[[x ]\] //g' -e 's/`//g' -e 's/\*\*//g')
+              
+              # Check if content is insufficient (too short or placeholder-like)
+              if [ -z "$clean_content" ] || [ ${#clean_content} -lt 20 ] || 
+                 echo "$clean_content" | grep -qiE "please include|please describe|please delete|n/a|todo|tbd|\.\.\."; then
+                insufficient_content_sections+=("$section_name")
+              fi
+            else
+              missing_sections+=("$section_name")
+            fi
+          done
+
+          # Check checklist items (at least some should be checked)
+          if echo "$PR_BODY_LOWER" | grep -q "checklist"; then
+            checklist_section=$(echo "$PR_BODY" | awk '
+              /checklist:/, /^#|$/' | grep -E "^- \[[ x]\]" | wc -l)
+            checked_items=$(echo "$PR_BODY" | grep -E "^- \[x\]" | wc -l)
+            
+            if [ "$checklist_section" -gt 0 ] && [ "$checked_items" -eq 0 ]; then
+              insufficient_content_sections+=("checklist (no items checked)")
+            fi
+          else
+            missing_sections+=("checklist")
+          fi
+
+          # Report results
+          if [ ${#missing_sections[@]} -gt 0 ] || [ ${#insufficient_content_sections[@]} -gt 0 ]; then
+            echo "❌ PR validation failed:"
+            
+            if [ ${#missing_sections[@]} -gt 0 ]; then
+              echo "Missing sections:"
+              printf ' - %s\n' "${missing_sections[@]}"
+            fi
+            
+            if [ ${#insufficient_content_sections[@]} -gt 0 ]; then
+              echo "Sections with insufficient content:"
+              printf ' - %s\n' "${insufficient_content_sections[@]}"
+            fi
+            
+            echo ""
+            echo "Please ensure all sections of the PR template are properly filled out:"
+            echo "- Description: Detailed explanation of changes"
+            echo "- JIRA ticket: Ticket number and link"
+            echo "- Type of change: Select relevant option"
+            echo "- Testing: How changes were tested"
+            echo "- Checklist: Complete relevant items"
+            exit 1
+          else
+            echo "✅ PR description validation passed!"
+            echo "All required sections are properly filled out."
+          fi
+
+      - name: Comment on PR if validation fails
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `❌ **PR Validation Failed**\n\nYour PR description is missing or has insufficient content in some required sections. Please ensure all sections of the PR template are properly filled out:\n\n- **Description**: Detailed explanation of changes and motivation\n- **JIRA ticket**: Ticket number and link\n- **Type of change**: Select relevant option\n- **Testing**: How changes were tested with specific details\n- **Checklist**: Complete relevant items\n\nSee the workflow logs for more details.`
+            })
