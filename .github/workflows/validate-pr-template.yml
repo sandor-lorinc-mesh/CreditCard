@@ -77,6 +77,8 @@ jobs:
              checked_types=$(echo "$type_section" | grep -E "^- \[[ x]\]" | wc -l)
              checked_types=$(echo "$checked_types" | tr -d ' ')
 
+            echo checked_types
+
             if [ "$checked_types" -gt 0 ] && [ "$checked_types" -eq 0 ]; then
               insufficient_content_sections+=("type of change (no items checked)")
             fi
