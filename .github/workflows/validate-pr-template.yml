@@ -65,18 +65,23 @@ jobs:
             fi
           done
 
-          # Check checklist items (at least some should be checked)
-          if echo "$PR_BODY_LOWER" | grep -q "checklist"; then
-            checklist_section=$(echo "$PR_BODY" | awk '
-              /checklist:/, /^#|$/' | grep -E "^- \[[ x]\]" | wc -l)
+          # Check checklist items (ALL should be checked)
+            if echo "$PR_BODY_LOWER" | grep -q "checklist"; then
+            checklist_items=$(echo "$PR_BODY" | awk '
+                /checklist:/, /^#|$/' | grep -E "^- \[[ x]\]" | wc -l)
             checked_items=$(echo "$PR_BODY" | grep -E "^- \[x\]" | wc -l)
+            unchecked_items=$(echo "$PR_BODY" | grep -E "^- \[ \]" | wc -l)
             
-            if [ "$checklist_section" -gt 0 ] && [ "$checked_items" -eq 0 ]; then
-              insufficient_content_sections+=("checklist (no items checked)")
+            if [ "$checklist_items" -gt 0 ]; then
+                if [ "$checked_items" -ne "$checklist_items" ]; then
+                insufficient_content_sections+=("checklist ($unchecked_items items unchecked)")
+                fi
+            else
+                insufficient_content_sections+=("checklist (no checklist items found)")
             fi
-          else
+            else
             missing_sections+=("checklist")
-          fi
+            fi
 
           # Report results
           if [ ${#missing_sections[@]} -gt 0 ] || [ ${#insufficient_content_sections[@]} -gt 0 ]; then
