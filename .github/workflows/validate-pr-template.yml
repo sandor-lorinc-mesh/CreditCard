@@ -72,6 +72,8 @@ jobs:
                   found { print }
               ')
             
+            echo "Type debug"
+            
              checked_types=$(echo "$type_section" | grep -E "^- \[[ x]\]" | wc -l)
              checked_types=$(echo "$checked_types" | tr -d ' ')
 
