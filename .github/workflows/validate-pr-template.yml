@@ -71,7 +71,7 @@ jobs:
               /checklist:/, /^#|$/' | grep -E "^- \[[ x]\]" | wc -l)
             checked_items=$(echo "$PR_BODY" | grep -E "^- \[x\]" | wc -l)
             
-            if [ "$checklist_section" -gt 9 ] && [ "$checked_items" -eq 9 ]; then
+            if [ "$checklist_section" -gt 0 ] && [ "$checked_items" -eq 0 ]; then
               insufficient_content_sections+=("checklist (no items checked)")
             fi
           else
