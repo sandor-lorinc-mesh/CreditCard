@@ -64,27 +64,32 @@ jobs:
             fi
           done
 
-            # Type of change items (at least some should be checked)
-          if echo "$PR_BODY_LOWER" | grep -qi "type of change"; then
-            type_section=$(echo "$PR_BODY_LOWER" | awk '
-                  /type of change/ { found=1; next }
-                  found && /^#/ { found=0 }  # Stop at next header
-                  found { print }
-              ')
+           # Type of change items (at least some should be checked)
+            if echo "$PR_BODY_LOWER" | grep -qi "type of change"; then
+                type_section=$(echo "$PR_BODY_LOWER" | awk '
+                    /type of change/ { found=1; next }
+                    found && /^#/ { found=0 }  # Stop at next header
+                    found { print }
+                ')
+                
+                type_items=$(echo "$type_section" | grep -E "^- \[[ x]\]" | wc -l)
+                type_items=$(echo "$type_items" | tr -d ' ')
             
-            echo "Type debug"
+                checked_types=$(echo "$type_section" | grep -E "^- \[x\]" | wc -l)
+                checked_types=$(echo "$checked_types" | tr -d ' ')
             
-             checked_types=$(echo "$type_section" | grep -E "^- \[[ x]\]" | wc -l)
-             checked_types=$(echo "$checked_types" | tr -d ' ')
-
-            echo $checked_types
-
-            if [ "$checked_types" -gt 0 ] && [ "$checked_types" -eq 0 ]; then
-              insufficient_content_sections+=("type of change (no items checked)")
+                unchecked_types=$(echo "$type_section" | grep -E "^- \[[[:space:]]*\]" | wc -l)
+                unchecked_types=$(echo "$unchecked_types" | tr -d ' ') 
+            
+                echo "Type items: $type_items, Checked: $checked_types, Unchecked: $unchecked_types"
+            
+                # Check if at least one item is checked
+                if [ "$checked_types" -eq 0 ]; then
+                    insufficient_content_sections+=("type of change (no items checked)")
+                fi
+            else
+                missing_sections+=("type of change")
             fi
-          else
-            missing_sections+=("type of change")
-          fi
 
            # Check checklist items (all should be checked)
           if echo "$PR_BODY_LOWER" | grep -qi "checklist"; then
