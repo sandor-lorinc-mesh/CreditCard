@@ -30,8 +30,9 @@ jobs:
             ["tested"]="how has this been tested?"
           )
 
-          missing_sections=()
-          insufficient_content_sections=()
+           # Initialize arrays if not already done
+           missing_sections=("${missing_sections[@]}")
+           insufficient_content_sections=("${insufficient_content_sections[@]}")
 
           # Check each required section
           for section_key in "${!required_sections[@]}"; do
@@ -66,8 +67,8 @@ jobs:
            # Check checklist items (all should be checked)
           if echo "$PR_BODY_LOWER" | grep -qi "checklist"; then
               # Count using different pattern matching
-              checklist_items=$(echo "$PR_BODY" | grep -c -E "^- \[[ x]\]")
-              unchecked_items=$(echo "$PR_BODY" | grep -c -E "^- \[[[:space:]]*\]")
+              checklist_items=$(echo "$PR_BODY" | grep -c -E "^- \[[ x]\]" || echo "0")
+              unchecked_items=$(echo "$PR_BODY" | grep -c -E "^- \[[[:space:]]*\]" || echo "0")
               
               echo "Checklist items: $checklist_items, Unchecked: $unchecked_items"
               
