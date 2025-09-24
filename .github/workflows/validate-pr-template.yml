@@ -64,6 +64,19 @@ jobs:
             fi
           done
 
+            # Type of change items (at least some should be checked)
+          if echo "$PR_BODY_LOWER" | grep -q "type of change"; then
+            checklist_section=$(echo "$PR_BODY" | awk '
+              /type of change/, /^#|$/' | grep -E "^- \[[ x]\]" | wc -l)
+            checked_items=$(echo "$PR_BODY" | grep -E "^- \[x\]" | wc -l)
+            
+            if [ "$checklist_section" -gt 0 ] && [ "$checked_items" -eq 0 ]; then
+              insufficient_content_sections+=("type of change (no items checked)")
+            fi
+          else
+            missing_sections+=("type of change")
+          fi
+
            # Check checklist items (all should be checked)
           if echo "$PR_BODY_LOWER" | grep -qi "checklist"; then
               # Count using different pattern matching
