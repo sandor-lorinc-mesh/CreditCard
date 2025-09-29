@@ -4,7 +4,6 @@ on:
     types: [opened, edited, reopened, synchronize]
     branches:
       - develop
-      - test
 
 jobs:
   validate-pr:
