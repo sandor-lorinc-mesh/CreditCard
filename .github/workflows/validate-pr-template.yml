@@ -12,7 +12,7 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Validate PR description
+      - name: Validate PR asda
         id: validate-pr-template
         run: |
           PR_BODY="${{ github.event.pull_request.body }}"
