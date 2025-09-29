@@ -2,6 +2,9 @@ name: Validate PR Description
 on:
   pull_request:
     types: [opened, edited, reopened, synchronize]
+    branches:
+      - develop
+      - test
 
 jobs:
   validate-pr:
