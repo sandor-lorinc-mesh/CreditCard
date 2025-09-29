@@ -3,8 +3,7 @@ on:
   pull_request:
     types: [opened, edited, reopened, synchronize]
     branches:
-      - develop
-      - test
+      - main
 
 jobs:
   validate-pr:
@@ -12,11 +11,11 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Validate PR description
+      - name: Validate PR Description
         id: validate-pr-template
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
         run: |
-          PR_BODY="${{ github.event.pull_request.body }}"
-          
           # Check if PR body is empty
           if [ -z "$PR_BODY" ]; then
             echo "❌ PR description is empty"
