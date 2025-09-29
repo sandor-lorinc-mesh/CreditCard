@@ -14,7 +14,7 @@ jobs:
       - name: Validate PR Description
         id: validate-pr-template
         run: |
-          PR_BODY="${{ github.event.pull_request.body }}"
+          PR_BODY=$(echo '${{ toJSON(github.event.pull_request.body) }}' | jq -r .)
           
           # Check if PR body is empty
           if [ -z "$PR_BODY" ]; then
